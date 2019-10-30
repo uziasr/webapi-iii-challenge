@@ -11,10 +11,12 @@ router.post('/users', validateUser,(req, res) => {
 });
 
 router.post('/users/:id/posts', (req, res) => {
-    const id = req.params.id
-    userDB.getById(id)
+    // const id = req.params.id
+    // console.log(id, req.body)
+    console.log(req.body)
+    userDB.insert(req.body)
     .then(users=>res.status(200).json(users))
-    .catch(err=>res.status(500).json({error: 'something went wrong'}))
+    .catch(err=>res.status(500).json({error: 'something went wrong!'}))
 });
 
 router.get('/users', (req, res) => {
@@ -23,14 +25,14 @@ router.get('/users', (req, res) => {
     .catch(err=>res.status(500).json({error: 'something went wrong'}))
 });
 
-router.get('/users/:id', (req, res) => {
+router.get('/users/:id', validateUserId,(req, res) => {
     const id = req.params.id
     userDB.getById(id)
     .then(users=>res.status(200).json(users))
     .catch(err=>res.status(500).json({error: 'something went wrong'}))
 });
 
-router.get('/users/:id/posts', (req, res) => {
+router.get('/users/:id/posts', validateUserId, (req, res) => {
     const id = req.params.id
     userDB.getUserPosts(id)
     .then(users=>res.status(200).json(users))
@@ -38,11 +40,23 @@ router.get('/users/:id/posts', (req, res) => {
 
 });
 
-router.delete('/:id', (req, res) => {
-
+router.delete('/users/:id',  validateUserId, (req, res) => {
+    const id = req.params.id
+    userDB.remove(id)
+    .then(count=>{
+        res.status(200).json({success: 'user successfully removed!'})
+    })
+    .catch(err=>{res.status(500).json({error:"use was not deleted;"})})
 });
 
-router.put('/:id', (req, res) => {
+router.put('/users/:id', validateUserId, (req, res) => {
+    const id = req.params.id
+    const update = req.body
+    userDB.update(id, update)
+    .then(user=>{res.status(200).json(req.body)})
+    .catch(err=>{
+        res.status(500).json({error:"user could not be updated"})
+    })
 
 });
 
@@ -50,7 +64,8 @@ router.put('/:id', (req, res) => {
 
 function validateUserId(req, res, next) {
     //validates the user id on every request that expects a user id parameter
-
+    userDB.getById(req.params.id)
+.then(count=>count?next():res.status(404).json({error:"This user ID is not valid"}))
 };
 
 function validateUser(req, res, next) {
@@ -61,6 +76,7 @@ function validateUser(req, res, next) {
 
 function validatePost(req, res, next) {
     //validates the body on a request to create a new post
+    ("user_id" in req.body & "text" in req.body)? next():res.status(400).json({error:"You need a user id and text for post"})
 
 };
 
