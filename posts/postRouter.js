@@ -28,10 +28,9 @@ router.delete('/posts/:id', (req, res) => {
     .catch(err=>{res.status(500).json({error:'something went wrong'})})
 });
 
-router.put('/posts/:id', (req, res) => {
+router.put('/posts/:id', validatePostId ,(req, res) => {
     const id = req.params.id
     const update = req.body
-    console.log(id, res)
     postDB.update(id, update)
     .then(count=>{
         count?res.status(200).json({success:'post was updated'}):
@@ -43,7 +42,8 @@ router.put('/posts/:id', (req, res) => {
 // custom middleware
 
 function validatePostId(req, res, next) {
-
+postDB.getById(req.params.id)
+.then(count=>count?next():res.status(404).json({error:"This post ID is not valid"}))
 };
 
 module.exports = router;
