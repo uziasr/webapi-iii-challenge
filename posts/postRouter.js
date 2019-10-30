@@ -10,14 +10,14 @@ router.get('/posts', (req, res) => {
     .catch(err=>{res.status(500).json({err:'this did not go well'})})
 });
 
-router.get('/posts/:id', (req, res) => {
+router.get('/posts/:id', validatePostId, (req, res) => {
     const id = req.params.id
     postDB.getById(id)
     .then(post=>{res.status(201).json(post)})
     .catch(err=>{res.status(500).json({err:'this did not go well'})})
 });
 
-router.delete('/posts/:id', (req, res) => {
+router.delete('/posts/:id', validatePostId, (req, res) => {
     const id = req.params.id
     postDB.remove(id)
     .then(count=>{
