@@ -4,19 +4,24 @@ const router = express.Router();
 
 const userDB = require('./userDb.js')
 
+const postDB = require('../posts/postDb.js')
+
 router.post('/users', validateUser,(req, res) => {
     userDB.insert(req.body)
     .then(user=>{res.status(200).json(user)})
     .catch(err=>{res.status(500).json({error:'could not be created'})})
 });
 
-router.post('/users/:id/posts', (req, res) => {
-    // const id = req.params.id
+router.post('/users/:id/posts', validateUserId, validatePost ,  (req, res) => {
+    const id = req.params.id
     // console.log(id, req.body)
-    console.log(req.body)
-    userDB.insert(req.body)
+    const updatedBody = {...req.body, user_id:id} 
+    console.log(updatedBody)
+    postDB.insert(updatedBody)
     .then(users=>res.status(200).json(users))
-    .catch(err=>res.status(500).json({error: 'something went wrong!'}))
+    .catch(err=>{
+        console.log(err)
+        res.status(500).json({error: 'something went wrong!'})})
 });
 
 router.get('/users', (req, res) => {
@@ -50,11 +55,12 @@ router.delete('/users/:id',  validateUserId, (req, res) => {
 });
 
 router.put('/users/:id', validateUserId, (req, res) => {
-    const id = req.params.id
-    const update = req.body
+    const id = req.params.id;
+    const update = req.body;
     userDB.update(id, update)
-    .then(user=>{res.status(200).json(req.body)})
+    .then(count=>{res.status(200).json(req.body)})
     .catch(err=>{
+        console.log(err)
         res.status(500).json({error:"user could not be updated"})
     })
 
@@ -76,7 +82,8 @@ function validateUser(req, res, next) {
 
 function validatePost(req, res, next) {
     //validates the body on a request to create a new post
-    ("user_id" in req.body & "text" in req.body)? next():res.status(400).json({error:"You need a user id and text for post"})
+    console.log(isNaN(req.params.id))
+    return (!isNaN(req.params.id) & "text" in req.body)? next():res.status(400).json({error:"You need a user id and text for post"})
 
 };
 
