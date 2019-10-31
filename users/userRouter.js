@@ -76,14 +76,16 @@ function validateUserId(req, res, next) {
 
 function validateUser(req, res, next) {
     //validates body on a request to create a new user
-    ("name" in req.body)? next():res.status(400).json({error:"You need a name to create a user"})
+    const userInputLength = (Object.keys(req.body).length)
+    return (userInputLength===0)?res.status(400).json({ message: "missing user data" }):("name" in req.body)? next():res.status(400).json({error:"You need a name to create a user"})
 
 };
 
 function validatePost(req, res, next) {
     //validates the body on a request to create a new post
-    console.log(isNaN(req.params.id))
-    return (!isNaN(req.params.id) & "text" in req.body)? next():res.status(400).json({error:"You need a user id and text for post"})
+    console.log(!req.body)
+    const userInputLength = (Object.keys(req.body).length)
+    return (userInputLength===0)?res.status(400).json({ message: "missing user data" }):(!isNaN(req.params.id) & "text" in req.body)? next():res.status(400).json({error:"You need a user id and text for post"})
 
 };
 
